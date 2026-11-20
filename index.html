@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+  <meta name="theme-color" content="#0b7a4b" />
+  <meta name="description" content="Book a pool table for the Leitrim Pool Premier League. Live availability, no double bookings." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Leitrim Pool Premier League — Table Bookings" />
+  <meta property="og:description" content="Check live table availability and book your slot." />
+
+  <title>Leitrim Pool Premier League — Table Bookings</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
+            <circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none" />
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-name">Leitrim Pool Premier League</span>
+          <span class="brand-sub">Table bookings</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="Refresh bookings" title="Refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6" /><path d="M20 4v5h-5" /></svg>
+        </button>
+        <button class="icon-btn" id="shareBtn" type="button" aria-label="Share this page" title="Share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.4 10.8l7.2-4.3M8.4 13.2l7.2 4.3" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="banner" id="statusBanner" role="status" hidden></div>
+
+    <section class="card date-card" aria-label="Choose a date">
+      <div class="date-main">
+        <button class="nav-btn" id="prevDay" type="button" aria-label="Previous day">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+
+        <label class="date-display">
+          <input type="date" id="dateInput" aria-label="Selected date" />
+          <svg class="date-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="3" />
+            <path d="M7 3v4M17 3v4M3 10h18" />
+          </svg>
+          <span class="date-text" id="dateText" aria-hidden="true"></span>
+        </label>
+
+        <button class="nav-btn" id="nextDay" type="button" aria-label="Next day">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+
+        <button class="today-btn" id="todayBtn" type="button">Today</button>
+      </div>
+
+      <div class="week-strip" id="weekStrip" aria-label="This week"></div>
+    </section>
+
+    <section class="card timeline-card" aria-labelledby="timelineTitle">
+      <div class="timeline-head">
+        <div>
+          <h1 class="timeline-title" id="timelineTitle">Loading…</h1>
+          <p class="timeline-meta" id="timelineMeta"></p>
+        </div>
+        <div class="head-actions">
+          <button class="today-btn book-btn" id="bookTableBtn" type="button">Book table</button>
+          <button class="today-btn admin-btn" id="scheduleBtn" type="button">Create schedule</button>
+          <button class="today-btn delete-btn" id="deleteScheduleBtn" type="button">Delete schedule</button>
+        </div>
+      </div>
+
+      <div class="timeline-scroll" id="timelineScroll">
+        <div class="timeline" id="timeline" role="region" aria-label="Table availability"></div>
+      </div>
+
+      <p class="hint">Tap a free slot to book. Availability updates automatically for everyone.</p>
+    </section>
+
+  </div>
+
+  <div class="overlay" id="overlay" hidden></div>
+
+  <section class="sheet" id="bookSheet" role="dialog" aria-modal="true" aria-labelledby="bookTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">New booking</p>
+        <h2 class="sheet-title" id="bookTitle">Book a table</h2>
+      </div>
+      <button class="icon-btn" id="closeBook" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <p class="sheet-date" id="bookDateLabel"></p>
+
+    <form id="bookForm" novalidate>
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input class="input" id="fName" type="text" maxlength="60" placeholder="Who is playing?" autocomplete="off" required />
+      </label>
+
+      <label class="field">
+        <span class="field-label">Date</span>
+        <input class="input" id="fDate" type="date" required />
+        <span class="field-hint">Today or a future date only.</span>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Table</span>
+          <select class="input" id="fTable"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Start</span>
+          <select class="input" id="fStart"></select>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Duration</span>
+          <select class="input" id="fDuration"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Ends at</span>
+          <input class="input" id="fEnd" type="text" readonly tabindex="-1" aria-live="polite" />
+        </label>
+      </div>
+
+      <p class="form-error" id="bookError" role="alert" hidden></p>
+
+      <div class="sheet-actions">
+        <button class="secondary-btn" id="cancelBook" type="button">Cancel</button>
+        <button class="primary-btn" id="submitBook" type="submit">Book table</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow" id="detailEyebrow">Booking</p>
+        <h2 class="sheet-title" id="detailTitle">Booking details</h2>
+      </div>
+      <button class="icon-btn" id="closeDetail" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <div class="detail-body">
+      <dl class="detail-grid">
+        <div><dt>Table</dt><dd id="dTable">—</dd></div>
+        <div class="detail-focus"><dt>Time</dt><dd id="dTime">—</dd></div>
+        <div><dt>Date</dt><dd id="dDate">—</dd></div>
+        <div class="detail-focus"><dt>Name</dt><dd id="dName">—</dd></div>
+      </dl>
+
+      <div class="detail-notes" id="dNotesWrap" hidden>
+        <p class="field-label">Notes</p>
+        <p class="detail-notes-text" id="dNotes"></p>
+      </div>
+    </div>
+
+    <p class="form-error" id="detailError" role="alert" hidden></p>
+
+    <div class="sheet-actions">
+      <button class="secondary-btn" id="closeDetail2" type="button">Close</button>
+      <button class="secondary-btn" id="editBooking" type="button">Edit time</button>
+      <button class="danger-btn" id="cancelBooking" type="button">Cancel booking</button>
+    </div>
+  </section>
+
+  <section class="sheet" id="editSheet" role="dialog" aria-modal="true" aria-labelledby="editTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">Change booking</p>
+        <h2 class="sheet-title" id="editTitle">Edit time</h2>
+      </div>
+      <button class="icon-btn" id="closeEdit" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <p class="sheet-date" id="editBookingLabel"></p>
+
+    <form id="editForm" novalidate>
+      <label class="field">
+        <span class="field-label">Date</span>
+        <input class="input" id="eDate" type="date" required />
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Start</span>
+          <select class="input" id="eStart"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Duration</span>
+          <select class="input" id="eDuration"></select>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Ends at</span>
+          <input class="input" id="eEnd" type="text" readonly tabindex="-1" aria-live="polite" />
+        </label>
+      </div>
+
+      <p class="form-error" id="editError" role="alert" hidden></p>
+
+      <div class="sheet-actions">
+        <button class="secondary-btn" id="cancelEdit" type="button">Cancel</button>
+        <button class="primary-btn" id="submitEdit" type="submit">Save changes</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet" id="passwordSheet" role="dialog" aria-modal="true" aria-labelledby="passwordTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">Admin access</p>
+        <h2 class="sheet-title" id="passwordTitle">Schedule password</h2>
+      </div>
+      <button class="icon-btn" id="closePassword" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <p class="sheet-date" id="passwordHint">Enter the password to block tables.</p>
+
+    <form id="passwordForm" novalidate>
+      <label class="field">
+        <span class="field-label">Password</span>
+        <input class="input" id="adminPasswordInput" type="password" inputmode="numeric" autocomplete="off" placeholder="••••" required />
+      </label>
+
+      <p class="form-error" id="passwordError" role="alert" hidden></p>
+
+      <div class="sheet-actions">
+        <button class="secondary-btn" id="cancelPassword" type="button">Cancel</button>
+        <button class="primary-btn" id="submitPassword" type="submit">Unlock</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet" id="adminSheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">Admin · Block tables</p>
+        <h2 class="sheet-title" id="adminTitle">Create schedule</h2>
+      </div>
+      <button class="icon-btn" id="closeAdmin" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <p class="sheet-date" id="adminDateLabel"></p>
+
+    <form id="adminForm" novalidate>
+      <label class="field">
+        <span class="field-label">Date</span>
+        <input class="input" id="aDate" type="date" required />
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Start</span>
+          <select class="input" id="aStart"></select>
+        </label>
+        <label class="field">
+          <span class="field-label">Duration</span>
+          <select class="input" id="aDuration"></select>
+        </label>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Ends at</span>
+          <input class="input" id="aEnd" type="text" readonly tabindex="-1" aria-live="polite" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Label (required)</span>
+        <input class="input" id="aLabel" type="text" maxlength="60" placeholder="e.g. League night" autocomplete="off" required />
+        <span class="field-hint">Used to identify and remove this schedule later.</span>
+      </label>
+
+      <div class="field">
+        <div class="field-head">
+          <span class="field-label">Tables to block</span>
+          <button class="link-btn" id="aAllTables" type="button">Select all</button>
+        </div>
+        <div class="table-grid" id="aTables" role="group" aria-label="Tables to block"></div>
+      </div>
+
+      <div class="recurrence">
+        <label class="field">
+          <span class="field-label">Repeat</span>
+          <select class="input" id="aRecur">
+            <option value="once">Does not repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </label>
+
+        <div class="recur-panel" id="aRecurDaily" hidden>
+          <label class="radio-row"><input type="radio" name="dailyMode" value="every" checked /> Every
+            <input class="num-input" id="aDailyEvery" type="number" min="1" max="30" value="1" /> day(s)</label>
+          <label class="radio-row"><input type="radio" name="dailyMode" value="weekdays" /> Every weekday (Mon–Fri)</label>
+        </div>
+
+        <div class="recur-panel" id="aRecurWeekly" hidden>
+          <div class="radio-row">Every
+            <input class="num-input" id="aWeeklyEvery" type="number" min="1" max="12" value="1" /> week(s) on:</div>
+          <div class="weekday-grid" id="aWeekdays">
+            <label><input type="checkbox" value="1" /> Mon</label>
+            <label><input type="checkbox" value="2" /> Tue</label>
+            <label><input type="checkbox" value="3" /> Wed</label>
+            <label><input type="checkbox" value="4" /> Thu</label>
+            <label><input type="checkbox" value="5" /> Fri</label>
+            <label><input type="checkbox" value="6" /> Sat</label>
+            <label><input type="checkbox" value="0" /> Sun</label>
+          </div>
+        </div>
+
+        <div class="recur-panel" id="aRecurMonthly" hidden>
+          <label class="radio-row"><input type="radio" name="monthlyMode" value="day" checked /> Day
+            <input class="num-input" id="aMonthlyDay" type="number" min="1" max="31" value="1" /> of every
+            <input class="num-input" id="aMonthlyEvery" type="number" min="1" max="12" value="1" /> month(s)</label>
+          <label class="radio-row"><input type="radio" name="monthlyMode" value="nth" /> The
+            <select class="mini-select" id="aMonthlyOrdinal">
+              <option value="1">first</option><option value="2">second</option>
+              <option value="3">third</option><option value="4">fourth</option><option value="5">last</option>
+            </select>
+            <select class="mini-select" id="aMonthlyWeekday">
+              <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
+              <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+              <option value="0">Sunday</option>
+            </select>
+            of every <input class="num-input" id="aMonthlyEveryNth" type="number" min="1" max="12" value="1" /> month(s)</label>
+        </div>
+
+        <div class="recur-panel" id="aRecurYearly" hidden>
+          <label class="radio-row"><input type="radio" name="yearlyMode" value="date" checked /> Every
+            <input class="num-input" id="aYearlyEvery" type="number" min="1" max="5" value="1" /> year(s) on
+            <select class="mini-select" id="aYearlyMonth"></select>
+            <input class="num-input" id="aYearlyDay" type="number" min="1" max="31" value="1" /></label>
+          <label class="radio-row"><input type="radio" name="yearlyMode" value="nth" /> The
+            <select class="mini-select" id="aYearlyOrdinal">
+              <option value="1">first</option><option value="2">second</option>
+              <option value="3">third</option><option value="4">fourth</option><option value="5">last</option>
+            </select>
+            <select class="mini-select" id="aYearlyWeekday">
+              <option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option>
+              <option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+              <option value="0">Sunday</option>
+            </select>
+            of <select class="mini-select" id="aYearlyMonthNth"></select> every
+            <input class="num-input" id="aYearlyEveryNth" type="number" min="1" max="5" value="1" /> year(s)</label>
+        </div>
+
+        <div class="recur-range">
+          <span class="field-label">Range of recurrence</span>
+          <label class="radio-row"><input type="radio" name="rangeMode" value="never" checked /> No end date</label>
+          <label class="radio-row"><input type="radio" name="rangeMode" value="date" /> End by
+            <input class="input end-date" id="aEndDate" type="date" /></label>
+          <label class="radio-row"><input type="radio" name="rangeMode" value="count" /> End after
+            <input class="num-input" id="aOccurrences" type="number" min="1" max="366" value="10" /> occurrence(s)</label>
+        </div>
+
+        <p class="recur-hint">Series stop at the one-year booking limit.</p>
+        <p class="recur-summary" id="aRecurSummary"></p>
+      </div>
+
+      <p class="admin-preview" id="aPreview"></p>
+      <p class="form-error" id="adminError" role="alert" hidden></p>
+
+      <div class="sheet-actions">
+        <button class="secondary-btn" id="cancelAdmin" type="button">Cancel</button>
+        <button class="primary-btn" id="submitAdmin" type="submit">Block tables</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="sheet" id="deleteSheet" role="dialog" aria-modal="true" aria-labelledby="deleteTitle" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <div>
+        <p class="eyebrow">Admin · Delete schedule</p>
+        <h2 class="sheet-title" id="deleteTitle">Delete schedule</h2>
+      </div>
+      <button class="icon-btn" id="closeDelete" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+
+    <p class="sheet-date">Find a schedule by the label used when it was created.</p>
+
+    <form id="deleteForm" novalidate>
+      <label class="field">
+        <span class="field-label">Schedule label</span>
+        <input class="input" id="dLabel" type="text" maxlength="60" placeholder="e.g. League night" autocomplete="off" required />
+      </label>
+
+      <div class="sheet-actions">
+        <button class="secondary-btn" id="cancelDelete" type="button">Cancel</button>
+        <button class="primary-btn" id="findSchedule" type="submit">Find schedule</button>
+      </div>
+    </form>
+
+    <p class="form-error" id="deleteError" role="alert" hidden></p>
+
+    <div class="delete-results" id="deleteResults" hidden>
+      <p class="delete-count" id="deleteCount"></p>
+      <div class="delete-list" id="deleteList"></div>
+      <p class="delete-hint" id="deleteHint" hidden>Tap the button again to confirm deletion.</p>
+      <div class="sheet-actions">
+        <button class="danger-btn" id="confirmDelete" type="button" hidden>Delete schedule</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
